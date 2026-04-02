@@ -18,7 +18,7 @@ export default function HomePage() {
           <h2 className="panelTitle">Single-path entry</h2>
           <p className="panelCopy">
             Start with the only flow that matters in Console v0: decision submission with visible
-            traceability and explicit validation feedback.
+            traceability, explicit validation feedback, and read-only decision lookup.
           </p>
           <div style={{ marginTop: 18 }}>
             <Link href="/decision-submit">Open Decision Submission</Link>

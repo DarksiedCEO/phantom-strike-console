@@ -22,6 +22,18 @@ export type DecisionSubmissionData = {
   correlation_id: string;
 };
 
+export type DecisionLookupData = {
+  signal_id: string;
+  baseline_confidence: number;
+  confidence_delta: number;
+  updated_confidence: number;
+  confidence_band: DecisionConfidenceBand;
+  disposition: DecisionDisposition;
+  reasoning: string;
+  trace_id: string;
+  correlation_id: string;
+};
+
 export type ResponseMeta = {
   confidence_band?: string;
   warnings: string[];
@@ -52,6 +64,12 @@ export type SuccessEnvelope = {
   meta: ResponseMeta;
 };
 
+export type LookupSuccessEnvelope = {
+  success: true;
+  data: DecisionLookupData;
+  meta: ResponseMeta;
+};
+
 export type ErrorEnvelope = {
   success: false;
   error: {
@@ -69,4 +87,11 @@ export type SubmissionUiState =
   | { kind: "submitting" }
   | { kind: "success"; status: number; body: SuccessEnvelope }
   | { kind: "validation-error"; status: number; body: ErrorEnvelope }
+  | { kind: "system-error"; message: string };
+
+export type LookupUiState =
+  | { kind: "idle" }
+  | { kind: "loading" }
+  | { kind: "found"; status: number; body: LookupSuccessEnvelope }
+  | { kind: "not-found"; status: number; body: ErrorEnvelope }
   | { kind: "system-error"; message: string };
