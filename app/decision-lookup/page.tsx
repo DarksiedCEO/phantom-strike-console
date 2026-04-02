@@ -1,6 +1,14 @@
 import { DecisionLookupForm } from "@/components/DecisionLookupForm";
 
-export default function DecisionLookupPage() {
+type DecisionLookupPageProps = {
+  searchParams?: {
+    signal_id?: string;
+  };
+};
+
+export default function DecisionLookupPage({ searchParams }: DecisionLookupPageProps) {
+  const initialSignalId = searchParams?.signal_id?.trim() ?? "";
+
   return (
     <main className="shell">
       <section className="hero">
@@ -13,7 +21,7 @@ export default function DecisionLookupPage() {
         </p>
       </section>
 
-      <DecisionLookupForm />
+      <DecisionLookupForm initialSignalId={initialSignalId} />
     </main>
   );
 }

@@ -5,8 +5,12 @@ import { useState, useTransition } from "react";
 import { DecisionLookupResult } from "@/components/DecisionLookupResult";
 import type { LookupUiState } from "@/lib/types";
 
-export function DecisionLookupForm() {
-  const [signalId, setSignalId] = useState("");
+type DecisionLookupFormProps = {
+  initialSignalId?: string;
+};
+
+export function DecisionLookupForm({ initialSignalId = "" }: DecisionLookupFormProps) {
+  const [signalId, setSignalId] = useState(initialSignalId);
   const [result, setResult] = useState<LookupUiState>({ kind: "idle" });
   const [isPending, startTransition] = useTransition();
 

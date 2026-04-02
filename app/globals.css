@@ -338,6 +338,22 @@ textarea {
   overflow-x: auto;
 }
 
+.inlineActionRow {
+  margin-top: -4px;
+}
+
+.inlineActionLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(35, 24, 15, 0.08);
+  color: var(--text);
+  font-weight: 700;
+  text-decoration: none;
+}
+
 .footerNote {
   margin-top: 16px;
   color: var(--muted);

@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import type {
   DecisionSubmissionRequest,
   ErrorEnvelope,
@@ -76,6 +78,14 @@ export function DecisionResult({ result, currentPayload }: DecisionResultProps) 
             <span className="kvLabel">Target endpoint</span>
             <p className="kvValue kvValueMono">{body.data.target_endpoint}</p>
           </div>
+        </div>
+        <div className="inlineActionRow">
+          <Link
+            className="inlineActionLink"
+            href={`/decision-lookup?signal_id=${encodeURIComponent(body.data.signal_id)}`}
+          >
+            View submitted decision
+          </Link>
         </div>
         <pre className="codeBlock">{renderPrettyJson(body)}</pre>
       </div>
