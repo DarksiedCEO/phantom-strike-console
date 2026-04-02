@@ -182,4 +182,16 @@ describe("Decision lookup page", () => {
       result.getByText("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa")
     ).toBeInTheDocument();
   });
+
+  it("prefills the lookup input from the signal_id query param", () => {
+    render(
+      <DecisionLookupPage
+        searchParams={{ signal_id: "11111111-1111-4111-8111-111111111111" }}
+      />
+    );
+
+    expect(screen.getByLabelText(/signal id/i)).toHaveValue(
+      "11111111-1111-4111-8111-111111111111"
+    );
+  });
 });
