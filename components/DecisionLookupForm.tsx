@@ -3,28 +3,40 @@
 import { useState, useTransition } from "react";
 
 import { DecisionLookupResult } from "@/components/DecisionLookupResult";
-import type { LookupUiState } from "@/lib/types";
+import type { DecisionLookupMode, LookupUiState } from "@/lib/types";
 
 type DecisionLookupFormProps = {
   initialSignalId?: string;
+  initialMode?: DecisionLookupMode;
 };
 
-export function DecisionLookupForm({ initialSignalId = "" }: DecisionLookupFormProps) {
-  const [signalId, setSignalId] = useState(initialSignalId);
+const LOOKUP_LABELS: Record<DecisionLookupMode, string> = {
+  signal_id: "Signal ID",
+  trace_id: "Trace ID",
+  correlation_id: "Correlation ID"
+};
+
+export function DecisionLookupForm({
+  initialSignalId = "",
+  initialMode = "signal_id"
+}: DecisionLookupFormProps) {
+  const [mode, setMode] = useState<DecisionLookupMode>(initialMode);
+  const [lookupValue, setLookupValue] = useState(initialSignalId);
   const [result, setResult] = useState<LookupUiState>({ kind: "idle" });
   const [isPending, startTransition] = useTransition();
 
   function submit(formData: FormData) {
-    const lookupSignalId = String(formData.get("signal_id") ?? "").trim();
-    if (!lookupSignalId) {
+    const lookupMode = String(formData.get("mode") ?? "signal_id") as DecisionLookupMode;
+    const value = String(formData.get("value") ?? "").trim();
+    if (!value) {
       setResult({
         kind: "not-found",
         status: 400,
         body: {
           success: false,
           error: {
-            code: "INVALID_SIGNAL_ID_QUERY",
-            message: "signal_id query parameter is required.",
+            code: "INVALID_LOOKUP_QUERY",
+            message: `${LOOKUP_LABELS[lookupMode]} is required.`,
             trace_id: "unavailable",
             retryable: false
           }
@@ -38,7 +50,7 @@ export function DecisionLookupForm({ initialSignalId = "" }: DecisionLookupFormP
 
       try {
         const response = await fetch(
-          `/api/decision-lookup?signal_id=${encodeURIComponent(lookupSignalId)}`,
+          `/api/decision-lookup?mode=${encodeURIComponent(lookupMode)}&value=${encodeURIComponent(value)}`,
           {
             method: "GET",
             headers: {
@@ -84,23 +96,48 @@ export function DecisionLookupForm({ initialSignalId = "" }: DecisionLookupFormP
 
           <form action={submit}>
             <div className="formGrid">
+              <div className="field">
+                <label htmlFor="mode">Lookup mode</label>
+                <select
+                  id="mode"
+                  name="mode"
+                  value={mode}
+                  onChange={(event) => setMode(event.target.value as DecisionLookupMode)}
+                >
+                  <option value="signal_id">signal_id</option>
+                  <option value="trace_id">trace_id</option>
+                  <option value="correlation_id">correlation_id</option>
+                </select>
+              </div>
               <div className="fieldWide">
-                <label htmlFor="signal_id">Signal ID</label>
+                <label htmlFor="value">{LOOKUP_LABELS[mode]}</label>
                 <input
-                  id="signal_id"
-                  name="signal_id"
-                  placeholder="df1eab71-aa5f-4ce2-9915-64ccf314e3b9"
+                  id="value"
+                  name="value"
+                  placeholder={
+                    mode === "signal_id"
+                      ? "df1eab71-aa5f-4ce2-9915-64ccf314e3b9"
+                      : mode === "trace_id"
+                        ? "trace-contract-smoke-001"
+                        : "00000000-0000-0000-0000-000000000001"
+                  }
                   required
-                  value={signalId}
-                  onChange={(event) => setSignalId(event.target.value)}
+                  value={lookupValue}
+                  onChange={(event) => setLookupValue(event.target.value)}
                 />
-                <div className="helper">Lookup is keyed only by the canonical signal UUID.</div>
+                <div className="helper">
+                  {mode === "signal_id"
+                    ? "Lookup is keyed by the canonical signal UUID."
+                    : mode === "trace_id"
+                      ? "Lookup is keyed by the exact trace_id returned by the enforced lane."
+                      : "Lookup is keyed by the exact correlation_id returned by the enforced lane."}
+                </div>
               </div>
             </div>
 
             <div className="actions">
               <div className="statusNote">
-                Console Phase 2 does not search by trace or correlation yet.
+                Console Phase 5 stays exact-match only and does not do fuzzy search or history.
               </div>
               <button className="submitButton" type="submit" disabled={isPending}>
                 {isPending ? "Looking up..." : "Look up decision"}
@@ -110,7 +147,7 @@ export function DecisionLookupForm({ initialSignalId = "" }: DecisionLookupFormP
         </div>
       </div>
 
-      <DecisionLookupResult result={result} signalId={signalId.trim()} />
+      <DecisionLookupResult result={result} lookupMode={mode} lookupValue={lookupValue.trim()} />
     </section>
   );
 }

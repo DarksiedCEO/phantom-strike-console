@@ -149,6 +149,7 @@ textarea {
 
 .field input,
 .field select,
+.fieldWide input,
 .fieldWide textarea {
   width: 100%;
   border: 1px solid rgba(77, 54, 35, 0.14);
@@ -162,6 +163,7 @@ textarea {
 
 .field input:focus,
 .field select:focus,
+.fieldWide input:focus,
 .fieldWide textarea:focus {
   border-color: rgba(157, 47, 31, 0.55);
   transform: translateY(-1px);

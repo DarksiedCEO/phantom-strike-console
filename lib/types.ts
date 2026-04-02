@@ -1,5 +1,6 @@
 export type DecisionConfidenceBand = "low" | "guarded" | "elevated" | "confirmed";
 export type DecisionDisposition = "promote" | "hold" | "suppress" | "escalate";
+export type DecisionLookupMode = "signal_id" | "trace_id" | "correlation_id";
 
 export type DecisionSubmissionRequest = {
   signal_id: string;
