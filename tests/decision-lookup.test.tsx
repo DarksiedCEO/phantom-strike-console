@@ -95,7 +95,7 @@ describe("Decision lookup page", () => {
     const result = within(resultPanel as HTMLElement);
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "/api/decision-lookup?signal_id=11111111-1111-4111-8111-111111111111",
+      "/api/decision-lookup?mode=signal_id&value=11111111-1111-4111-8111-111111111111",
       expect.objectContaining({
         method: "GET"
       })
@@ -106,6 +106,139 @@ describe("Decision lookup page", () => {
     expect(result.getByText("escalate")).toBeInTheDocument();
     expect(result.getByText("0.620 -> 0.748 (elevated, delta 0.128)")).toBeInTheDocument();
     expect(result.getByText("retrieved decision reasoning")).toBeInTheDocument();
+  });
+
+  it("renders a found decision record from exact trace_id lookup", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(global.fetch);
+
+    fetchMock.mockResolvedValueOnce(
+      createJsonResponse(
+        {
+          success: true,
+          data: {
+            signal_id: "11111111-1111-4111-8111-111111111111",
+            baseline_confidence: 0.62,
+            confidence_delta: 0.128,
+            updated_confidence: 0.748,
+            confidence_band: "elevated",
+            disposition: "escalate",
+            reasoning: "trace lookup reasoning",
+            trace_id: "trace-lookup-001",
+            correlation_id: "00000000-0000-0000-0000-000000000221"
+          },
+          meta: {
+            confidence_band: "elevated",
+            warnings: [],
+            trace_id: "trace-lookup-001",
+            correlation_id: "00000000-0000-0000-0000-000000000221",
+            audit: {
+              schema: {
+                contractVersion: "v1",
+                schemaName: "signalDecisionRecord",
+                schemaRevision: 0,
+                packageVersion: "0.1.0"
+              },
+              trace: {
+                request_id: "req-lookup-trace-1",
+                trace_id: "trace-lookup-001",
+                correlation_id: "00000000-0000-0000-0000-000000000221",
+                actor_service: "core",
+                environment: "local"
+              },
+              recorded_at: "2026-04-02T01:00:00Z",
+              tags: []
+            }
+          }
+        },
+        true,
+        200
+      )
+    );
+
+    render(<DecisionLookupPage />);
+
+    await user.selectOptions(screen.getByLabelText(/lookup mode/i), "trace_id");
+    await user.type(screen.getByLabelText(/trace id/i), "trace-lookup-001");
+    await user.click(screen.getByRole("button", { name: /look up decision/i }));
+
+    await waitFor(() => expect(screen.getByText("Decision found")).toBeInTheDocument());
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/decision-lookup?mode=trace_id&value=trace-lookup-001",
+      expect.objectContaining({
+        method: "GET"
+      })
+    );
+    expect(screen.getByText("trace lookup reasoning")).toBeInTheDocument();
+  });
+
+  it("renders a found decision record from exact correlation_id lookup", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(global.fetch);
+
+    fetchMock.mockResolvedValueOnce(
+      createJsonResponse(
+        {
+          success: true,
+          data: {
+            signal_id: "11111111-1111-4111-8111-111111111111",
+            baseline_confidence: 0.62,
+            confidence_delta: 0.128,
+            updated_confidence: 0.748,
+            confidence_band: "elevated",
+            disposition: "escalate",
+            reasoning: "correlation lookup reasoning",
+            trace_id: "trace-lookup-001",
+            correlation_id: "00000000-0000-0000-0000-000000000221"
+          },
+          meta: {
+            confidence_band: "elevated",
+            warnings: [],
+            trace_id: "trace-lookup-001",
+            correlation_id: "00000000-0000-0000-0000-000000000221",
+            audit: {
+              schema: {
+                contractVersion: "v1",
+                schemaName: "signalDecisionRecord",
+                schemaRevision: 0,
+                packageVersion: "0.1.0"
+              },
+              trace: {
+                request_id: "req-lookup-correlation-1",
+                trace_id: "trace-lookup-001",
+                correlation_id: "00000000-0000-0000-0000-000000000221",
+                actor_service: "core",
+                environment: "local"
+              },
+              recorded_at: "2026-04-02T01:00:00Z",
+              tags: []
+            }
+          }
+        },
+        true,
+        200
+      )
+    );
+
+    render(<DecisionLookupPage />);
+
+    await user.selectOptions(screen.getByLabelText(/lookup mode/i), "correlation_id");
+    await user.type(
+      screen.getByLabelText(/correlation id/i),
+      "00000000-0000-0000-0000-000000000221"
+    );
+    await user.click(screen.getByRole("button", { name: /look up decision/i }));
+
+    await waitFor(() => expect(screen.getByText("Decision found")).toBeInTheDocument());
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/decision-lookup?mode=correlation_id&value=00000000-0000-0000-0000-000000000221",
+      expect.objectContaining({
+        method: "GET"
+      })
+    );
+    expect(screen.getByText("correlation lookup reasoning")).toBeInTheDocument();
   });
 
   it("renders a clean not-found state for an unknown signal id", async () => {
