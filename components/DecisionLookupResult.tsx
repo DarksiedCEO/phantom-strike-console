@@ -1,10 +1,22 @@
 "use client";
 
-import type { ErrorEnvelope, LookupSuccessEnvelope, LookupUiState } from "@/lib/types";
+import type {
+  DecisionLookupMode,
+  ErrorEnvelope,
+  LookupSuccessEnvelope,
+  LookupUiState
+} from "@/lib/types";
 
 type DecisionLookupResultProps = {
   result: LookupUiState;
-  signalId: string;
+  lookupMode: DecisionLookupMode;
+  lookupValue: string;
+};
+
+const LOOKUP_LABELS: Record<DecisionLookupMode, string> = {
+  signal_id: "Signal ID",
+  trace_id: "Trace ID",
+  correlation_id: "Correlation ID"
 };
 
 function renderConfidenceSummary(body: LookupSuccessEnvelope) {
@@ -16,19 +28,23 @@ function renderPrettyJson(value: unknown) {
   return JSON.stringify(value, null, 2);
 }
 
-export function DecisionLookupResult({ result, signalId }: DecisionLookupResultProps) {
+export function DecisionLookupResult({
+  result,
+  lookupMode,
+  lookupValue
+}: DecisionLookupResultProps) {
   function renderIdle() {
     return (
       <div className="resultState">
         <span className="badge badgeIdle">Idle</span>
         <p className="panelCopy">
-          Retrieval truth will render here. Lookup is read-only and keyed only by the exact
-          signal_id already accepted by core.
+          Retrieval truth will render here. Lookup is read-only and keyed only by one exact
+          operational identifier already accepted by core.
         </p>
         <div className="kvList">
           <div className="kvRow">
-            <span className="kvLabel">Lookup key</span>
-            <p className="kvValue kvValueMono">{signalId || "none yet"}</p>
+            <span className="kvLabel">{LOOKUP_LABELS[lookupMode]}</span>
+            <p className="kvValue kvValueMono">{lookupValue || "none yet"}</p>
           </div>
         </div>
       </div>
@@ -84,8 +100,8 @@ export function DecisionLookupResult({ result, signalId }: DecisionLookupResultP
             <p className="kvValue">{body.error.message}</p>
           </div>
           <div className="kvRow">
-            <span className="kvLabel">Lookup signal ID</span>
-            <p className="kvValue kvValueMono">{signalId}</p>
+            <span className="kvLabel">{LOOKUP_LABELS[lookupMode]}</span>
+            <p className="kvValue kvValueMono">{lookupValue}</p>
           </div>
         </div>
         <pre className="codeBlock">{renderPrettyJson(body)}</pre>
@@ -126,7 +142,7 @@ export function DecisionLookupResult({ result, signalId }: DecisionLookupResultP
         {result.kind === "system-error" && renderSystemError(result.message)}
 
         <p className="footerNote">
-          Console Phase 2 stays read-only and only shows backend retrieval truth.
+          Console Phase 5 stays read-only and only shows backend retrieval truth.
         </p>
       </div>
     </aside>

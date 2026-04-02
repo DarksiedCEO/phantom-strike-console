@@ -136,6 +136,12 @@ describe("Decision submission page", () => {
     expect(result.getByText("escalate")).toBeInTheDocument();
     expect(result.getByText("0.720 -> 0.800 (confirmed, delta 0.080)")).toBeInTheDocument();
     expect(result.getByText("console happy path reasoning")).toBeInTheDocument();
+    expect(
+      result.getByRole("link", { name: "View submitted decision" })
+    ).toHaveAttribute(
+      "href",
+      "/decision-lookup?signal_id=11111111-1111-4111-8111-111111111111"
+    );
   });
 
   it("renders backend validation failure truth without swallowing the error details", async () => {
